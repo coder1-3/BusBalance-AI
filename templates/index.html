@@ -1,17 +1,67 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<div class="card" style="text-align: center; padding: 50px;">
-    <h2 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 20px;">Welcome to Smart Transit</h2>
-    <p style="font-size: 1.2rem; color: #64748B;">Our AI analyzes passenger demand to deploy buses optimally.</p>
-    <br>
-    {% if not session.user_id %}
-        <p>Login to book your ticket or manage schedules.</p>
-        <br>
-        <a href="/login" class="btn btn-primary btn-lg">Get Started</a>
-    {% else %}
-        <p>Go to your dashboard to continue!</p>
-        <a href="{% if session.role == 'passenger' %}/passenger/dashboard{% else %}/staff/dashboard{% endif %}" class="btn btn-primary">Go to Dashboard</a>
-    {% endif %}
+<!-- Hero Section -->
+<div class="card" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; background-color: var(--brand-blue); color: white; padding: 3rem; border: none;">
+    <div style="flex: 1; min-width: 300px; padding-right: 2rem;">
+        <h1 style="color: white; font-size: 3rem; line-height: 1.2;">Smarter Commutes.<br><span style="color: var(--brand-gold);">Better City.</span></h1>
+        <p style="font-size: 1.2rem; margin: 1.5rem 0; opacity: 0.9;">
+            BusBalance uses intelligent demand tracking to ensure buses are exactly where they need to be. Whether you are commuting to work or running errands, experience a reliable transit system tailored to actual city needs.
+        </p>
+        {% if not session.user_id %}
+            <a href="/register" class="btn btn-gold" style="font-size: 1.2rem;">Create Account</a>
+            <a href="/login" class="btn btn-outline" style="color: white; border-color: white; margin-left: 10px; font-size: 1.2rem;">Sign In</a>
+        {% else %}
+            <a href="{% if session.role == 'passenger' %}/passenger/dashboard{% else %}/staff/dashboard{% endif %}" class="btn btn-gold" style="font-size: 1.2rem;">Go to Dashboard</a>
+        {% endif %}
+    </div>
+    
+    <!-- Professional Vector Graphic generation (Inline SVG) -->
+    <div style="flex: 1; min-width: 300px; display: flex; justify-content: center; align-items: center;">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 300" width="100%" height="auto">
+            <rect width="400" height="300" fill="none"/>
+            <!-- Road -->
+            <path d="M0 250 L400 250 L380 300 L0 300 Z" fill="#2c3e50" opacity="0.8"/>
+            <line x1="50" y1="275" x2="100" y2="275" stroke="#f5a623" stroke-width="4" stroke-dasharray="10,5"/>
+            <line x1="150" y1="275" x2="200" y2="275" stroke="#f5a623" stroke-width="4" stroke-dasharray="10,5"/>
+            <line x1="250" y1="275" x2="300" y2="275" stroke="#f5a623" stroke-width="4" stroke-dasharray="10,5"/>
+            <!-- Bus Body -->
+            <rect x="70" y="130" width="260" height="110" rx="15" fill="#f5a623"/>
+            <rect x="70" y="190" width="260" height="15" fill="#0f3a68"/>
+            <!-- Windows -->
+            <rect x="85" y="145" width="45" height="35" rx="5" fill="#e0f7fa"/>
+            <rect x="140" y="145" width="45" height="35" rx="5" fill="#e0f7fa"/>
+            <rect x="195" y="145" width="45" height="35" rx="5" fill="#e0f7fa"/>
+            <rect x="250" y="145" width="65" height="35" rx="5" fill="#e0f7fa"/>
+            <!-- Wheels -->
+            <circle cx="120" cy="245" r="20" fill="#333"/>
+            <circle cx="120" cy="245" r="10" fill="#ccc"/>
+            <circle cx="280" cy="245" r="20" fill="#333"/>
+            <circle cx="280" cy="245" r="10" fill="#ccc"/>
+            <!-- AI Nodes/Connection Network (Representing Smart System) -->
+            <circle cx="90" cy="60" r="5" fill="#4fc3f7"/>
+            <circle cx="200" cy="40" r="7" fill="#4fc3f7"/>
+            <circle cx="310" cy="70" r="5" fill="#4fc3f7"/>
+            <line x1="90" y1="60" x2="200" y2="40" stroke="#4fc3f7" stroke-width="2" opacity="0.5"/>
+            <line x1="200" y1="40" x2="310" y2="70" stroke="#4fc3f7" stroke-width="2" opacity="0.5"/>
+            <line x1="200" y1="40" x2="200" y2="130" stroke="#4fc3f7" stroke-width="2" stroke-dasharray="4,4"/>
+        </svg>
+    </div>
+</div>
+
+<!-- Information Section -->
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 2rem; margin-top: 2rem;">
+    <div class="card">
+        <h3>1. Plan Your Route</h3>
+        <p>Check the daily schedule with real-time seat availability. Our interface is designed to be clear, large, and easy to read for commuters of all ages.</p>
+    </div>
+    <div class="card">
+        <h3>2. Secure Your Seat</h3>
+        <p>Book your ticket with a single click. If a bus reaches capacity, you are not just turned away—our system logs your request to inform tomorrow's schedule.</p>
+    </div>
+    <div class="card">
+        <h3>3. AI-Driven Adjustments</h3>
+        <p>The transit authority uses overflow data to intelligently assign more buses to routes with high demand, ensuring a comfortable ride for everyone.</p>
+    </div>
 </div>
 {% endblock %}

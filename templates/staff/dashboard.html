@@ -1,31 +1,47 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<h2>📊 Management & AI Dashboard</h2>
-<p style="color: #64748B;">Monitor capacity and overflow demand to train the AI model.</p>
-<div class="card" style="margin-top: 20px; overflow-x: auto;">
-    <table>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <div>
+        <h1>Transit Operations Dashboard</h1>
+        <p style="font-size: 1.1rem; color: var(--text-muted);">Monitor route capacities and AI overflow data.</p>
+    </div>
+    <a href="/staff/edit" class="btn btn-primary">➕ Add New Schedule</a>
+</div>
+
+<div class="card" style="overflow-x: auto; padding: 0;">
+    <table class="data-table">
         <thead>
             <tr>
-                <th>Route</th>
-                <th>Time</th>
+                <th>Route Name</th>
+                <th>Departure</th>
                 <th>Capacity</th>
-                <th>Booked</th>
-                <th><span style="color: #EF4444;">🔥 AI Overflow Demand</span></th>
-                <th>Driver</th>
-                <th>Conductor</th>
+                <th>Seats Booked</th>
+                <th style="background-color: #b71c1c;">AI Overflow Demand</th>
+                <th>Driver / Conductor</th>
             </tr>
         </thead>
         <tbody>
             {% for s in schedules %}
             <tr>
-                <td>{{ s.route_name }}</td>
+                <td style="font-weight: 600;">{{ s.route_name }}</td>
                 <td>{{ s.departure_time }}</td>
                 <td>{{ s.capacity }}</td>
-                <td>{{ s.booked_seats }}</td>
-                <td><b style="color: #EF4444; font-size: 1.2em;">{{ s.overflow_count }}</b></td>
-                <td>{{ s.driver_name }}</td>
-                <td>{{ s.conductor_name }}</td>
+                <td>
+                    {% if s.booked_seats >= s.capacity %}
+                        <span style="color: var(--danger); font-weight: bold;">{{ s.booked_seats }} (FULL)</span>
+                    {% else %}
+                        {{ s.booked_seats }}
+                    {% endif %}
+                </td>
+                <td style="text-align: center;">
+                    {% if s.overflow_count > 0 %}
+                        <span style="background-color: #ffebee; color: #c62828; padding: 4px 8px; border-radius: 4px; font-weight: bold; font-size: 1.1rem;">+{{ s.overflow_count }} Passengers</span>
+                    {% else %}
+                        <span style="color: #9e9e9e;">0</span>
+                    {% endif %}
+                </td>
+                <td>{{ s.driver_name }} <br> <span style="font-size: 0.9em; color: var(--text-muted);">{{ s.conductor_name }} (Cond.)</span></td>
             </tr>
             {% endfor %}
         </tbody>

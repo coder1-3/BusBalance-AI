@@ -6,7 +6,7 @@ from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
-app.secret_key = 'super_secret_bus_key'
+app.secret_key = 'super_secret_transit_key'
 DATABASE = 'busbalance.db'
 
 def get_db():
@@ -35,7 +35,7 @@ def role_required(role):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             if session.get("role") != role:
-                flash("Unauthorized access.", "error")
+                flash("Unauthorized access. Please login with correct credentials.", "error")
                 return redirect("/")
             return f(*args, **kwargs)
         return decorated_function
@@ -50,13 +50,13 @@ def init_db():
             c.execute('''CREATE TABLE bookings (id INTEGER PRIMARY KEY, user_id INTEGER, schedule_id INTEGER, status TEXT)''')
             
             # Dummy data
-            c.execute("INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)", ('staff1', generate_password_hash('pass'), 'Alice Schedular', 'staff'))
-            c.execute("INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)", ('pass1', generate_password_hash('pass'), 'Bob Passenger', 'passenger'))
+            c.execute("INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)", ('admin', generate_password_hash('admin123'), 'System Admin', 'staff'))
+            c.execute("INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)", ('user', generate_password_hash('user123'), 'Senior Citizen', 'passenger'))
             
             schedules = [
-                ('Route A - City Center', '08:00 AM', 50, 48, 0, 'John Doe', 'Mike Smith'),
-                ('Route B - Tech Park', '09:00 AM', 40, 40, 5, 'Sara Connor', 'Tim Allen'),
-                ('Route C - Mall', '10:30 AM', 60, 20, 0, 'Bruce Wayne', 'Clark Kent')
+                ('Route 101 - Central Station', '08:00 AM', 40, 38, 0, 'Robert D.', 'Michael S.'),
+                ('Route 205 - Business Park', '09:15 AM', 50, 50, 12, 'Sarah C.', 'James T.'),
+                ('Route 304 - City Hospital', '10:30 AM', 30, 15, 0, 'David W.', 'Linda K.')
             ]
             c.executemany("INSERT INTO schedules (route_name, departure_time, capacity, booked_seats, overflow_count, driver_name, conductor_name) VALUES (?, ?, ?, ?, ?, ?, ?)", schedules)
             conn.commit()
@@ -85,7 +85,7 @@ def login():
                 return redirect('/staff/dashboard')
             else:
                 return redirect('/passenger/dashboard')
-        flash('Invalid credentials', 'error')
+        flash('Invalid username or password. Please try again.', 'error')
     return render_template('login.html')
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -100,10 +100,10 @@ def register():
             db.execute("INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)", 
                        (username, generate_password_hash(password), name, role))
             db.commit()
-            flash('Registration successful! Please login.', 'success')
+            flash('Registration successful! Please login to continue.', 'success')
             return redirect('/login')
         except sqlite3.IntegrityError:
-            flash('Username already exists.', 'error')
+            flash('This username is already taken. Please choose another.', 'error')
     return render_template('register.html')
 
 @app.route('/logout')
@@ -131,12 +131,12 @@ def book_ticket(schedule_id):
         db.execute("UPDATE schedules SET booked_seats = booked_seats + 1 WHERE id = ?", (schedule_id,))
         db.execute("INSERT INTO bookings (user_id, schedule_id, status) VALUES (?, ?, 'confirmed')", (session['user_id'], schedule_id))
         db.commit()
-        flash('Ticket Booked Successfully!', 'success')
+        flash('Seat confirmed! Your ticket has been booked successfully.', 'success')
     else:
         db.execute("UPDATE schedules SET overflow_count = overflow_count + 1 WHERE id = ?", (schedule_id,))
         db.execute("INSERT INTO bookings (user_id, schedule_id, status) VALUES (?, ?, 'overflow')", (session['user_id'], schedule_id))
         db.commit()
-        flash('Bus is full! You have been added to the overflow list for AI predictions.', 'warning')
+        flash('Notice: This bus is full. You have been added to the waitlist. This helps our AI schedule more buses in the future.', 'warning')
         
     return redirect('/passenger/dashboard')
 
@@ -163,7 +163,7 @@ def staff_edit():
         db.execute("INSERT INTO schedules (route_name, departure_time, capacity, driver_name, conductor_name) VALUES (?, ?, ?, ?, ?)",
                    (route_name, departure_time, capacity, driver_name, conductor_name))
         db.commit()
-        flash('New schedule added successfully.', 'success')
+        flash('New schedule added successfully to the system.', 'success')
         return redirect('/staff/dashboard')
     
     schedules = db.execute("SELECT * FROM schedules").fetchall()

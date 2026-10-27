@@ -1,17 +1,33 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<div class="card" style="max-width: 400px; margin: 0 auto; text-align: center;">
-    <h2>Create an Account</h2>
-    <form method="POST" action="/register" style="margin-top: 20px;">
-        <input type="text" name="name" placeholder="Full Name" required>
-        <input type="text" name="username" placeholder="Username" required>
-        <input type="password" name="password" placeholder="Password" required>
-        <select name="role">
-            <option value="passenger">Passenger</option>
-            <option value="staff">Staff (Conductor/Driver)</option>
-        </select>
-        <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
-    </form>
+<div style="display: flex; justify-content: center; align-items: center; min-height: 60vh;">
+    <div class="card" style="width: 100%; max-width: 500px;">
+        <h2 style="text-align: center;">Create an Account</h2>
+        <p style="text-align: center; color: var(--text-muted); margin-bottom: 2rem;">Join BusBalance to experience smarter transit.</p>
+        
+        <form method="POST" action="/register">
+            <div class="form-group">
+                <label for="name">Full Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="username">Choose a Username</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Create a Password</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div class="form-group">
+                <label for="role">Account Type</label>
+                <select id="role" name="role" required>
+                    <option value="passenger">Commuter / Passenger</option>
+                    <option value="staff">Transit Authority Staff</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.2rem; margin-top: 1rem;">Register Now</button>
+        </form>
+    </div>
 </div>
 {% endblock %}

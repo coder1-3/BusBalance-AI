@@ -1,16 +1,43 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<h2>⚙️ Manage Schedules</h2>
-<div class="card" style="max-width: 500px; margin-top: 20px;">
-    <h3>Add New Bus</h3>
-    <form method="POST" action="/staff/edit" style="margin-top: 15px;">
-        <input type="text" name="route_name" placeholder="Route Name" required>
-        <input type="text" name="departure_time" placeholder="Departure Time (e.g. 11:00 AM)" required>
-        <input type="number" name="capacity" placeholder="Seating Capacity" required>
-        <input type="text" name="driver_name" placeholder="Driver Name" required>
-        <input type="text" name="conductor_name" placeholder="Conductor Name" required>
-        <button type="submit" class="btn btn-primary">Add Schedule</button>
+<div style="margin-bottom: 2rem;">
+    <a href="/staff/dashboard" style="color: var(--brand-blue); text-decoration: none;">&larr; Back to Dashboard</a>
+    <h1 style="margin-top: 1rem;">Update Transit Schedules</h1>
+</div>
+
+<div class="card" style="max-width: 600px;">
+    <h2 style="border-bottom: 1px solid var(--border-color); padding-bottom: 1rem; margin-bottom: 1.5rem;">Add New Bus Route</h2>
+    
+    <form method="POST" action="/staff/edit">
+        <div class="form-group">
+            <label for="route_name">Route Designation</label>
+            <input type="text" id="route_name" name="route_name" placeholder="e.g. Route 402 - North Station" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="departure_time">Departure Time</label>
+            <input type="text" id="departure_time" name="departure_time" placeholder="e.g. 02:00 PM" required>
+        </div>
+        
+        <div class="form-group">
+            <label for="capacity">Vehicle Seating Capacity</label>
+            <input type="number" id="capacity" name="capacity" placeholder="e.g. 45" required min="1">
+        </div>
+        
+        <div style="display: flex; gap: 1rem;">
+            <div class="form-group" style="flex: 1;">
+                <label for="driver_name">Assigned Driver</label>
+                <input type="text" id="driver_name" name="driver_name" required>
+            </div>
+            
+            <div class="form-group" style="flex: 1;">
+                <label for="conductor_name">Assigned Conductor</label>
+                <input type="text" id="conductor_name" name="conductor_name" required>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem; margin-top: 1rem;">Add to System Schedule</button>
     </form>
 </div>
 {% endblock %}

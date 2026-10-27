@@ -1,28 +1,41 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<h2>🚍 Upcoming Bus Schedules</h2>
-<p style="color: #64748B; margin-bottom: 20px;">Book your tickets based on AI predicted schedules.</p>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+<div style="margin-bottom: 2rem;">
+    <h1>Available Bus Schedules</h1>
+    <p style="font-size: 1.1rem; color: var(--text-muted);">Please select a route below to reserve your seat. Schedules are optimized daily.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(350px, 1fr)); gap: 2rem;">
     {% for s in schedules %}
-    <div class="card">
-        <h3 style="color: var(--primary);">{{ s.route_name }}</h3>
-        <p><b>Departure:</b> {{ s.departure_time }}</p>
-        <p><b>Capacity:</b> {{ s.capacity }}</p>
-        
-        {% set perc = (s.booked_seats / s.capacity * 100)|round %}
-        <p style="margin-top: 10px; font-size: 0.9em;"><b>{{ s.booked_seats }}</b> booked</p>
-        <div class="progress-bar">
-            <div class="progress {% if s.booked_seats >= s.capacity %}full{% endif %}" style="width: {{ perc }}%;"></div>
+    <div class="card ticket-card">
+        <div class="ticket-header">
+            <h2 style="margin: 0; color: var(--brand-blue);">{{ s.route_name }}</h2>
+            <p style="font-size: 1.4rem; font-weight: bold; margin-top: 0.5rem; color: #000;">🕒 {{ s.departure_time }}</p>
         </div>
         
-        <form method="POST" action="/passenger/book/{{ s.id }}" style="margin-top: 20px;">
-            {% if s.booked_seats >= s.capacity %}
-                <button type="submit" class="btn btn-warning" style="width: 100%;">Bus Full - Add to Overflow List</button>
-            {% else %}
-                <button type="submit" class="btn btn-success" style="width: 100%;">Book Ticket</button>
-            {% endif %}
-        </form>
+        <div class="ticket-body">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <span>Seats Booked: <strong>{{ s.booked_seats }}</strong></span>
+                <span>Total Capacity: <strong>{{ s.capacity }}</strong></span>
+            </div>
+            
+            {% set perc = (s.booked_seats / s.capacity * 100)|round %}
+            <div class="capacity-bar">
+                <div class="capacity-fill {% if s.booked_seats >= s.capacity %}full{% endif %}" style="width: {{ perc }}%;"></div>
+            </div>
+            
+            <form method="POST" action="/passenger/book/{{ s.id }}">
+                {% if s.booked_seats >= s.capacity %}
+                    <div style="background-color: #ffebee; padding: 1rem; border-radius: 4px; text-align: center; margin-bottom: 1rem;">
+                        <p style="color: #c62828; font-weight: bold; margin: 0;">Notice: Bus is at Full Capacity</p>
+                    </div>
+                    <button type="submit" class="btn" style="width: 100%; background-color: #9e9e9e; color: white;">Join Waitlist (Helps AI routing)</button>
+                {% else %}
+                    <button type="submit" class="btn btn-success" style="width: 100%; font-size: 1.2rem; padding: 1rem;">Book This Seat</button>
+                {% endif %}
+            </form>
+        </div>
     </div>
     {% endfor %}
 </div>
