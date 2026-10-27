@@ -1,0 +1,41 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<h2>Seat Selection: {{ schedule.route_name }} ({{ schedule.departure_time }})</h2>
+<div style="display: flex; gap: 30px; flex-wrap: wrap;">
+    <div style="flex: 1; min-width: 300px;">
+        <form method="POST" action="/passenger/checkout">
+            <input type="hidden" name="schedule_id" value="{{ schedule.id }}">
+            <div class="bus-layout">
+                {% for i in range(1, schedule.capacity + 1) %}
+                    {% if i in booked_seats %}
+                        <div class="seat-booked">{{ i }}</div>
+                    {% else %}
+                        <label class="seat-label">
+                            <input type="radio" name="seat_number" value="{{ i }}" required>
+                            <span>{{ i }}</span>
+                        </label>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="submit" class="btn btn-success" style="padding: 12px 30px; font-size: 1.1em;">Confirm Seat & Proceed to Payment</button>
+            </div>
+        </form>
+    </div>
+    <div style="flex: 1; min-width: 300px;">
+        <div class="card">
+            <h3>Legend</h3>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div style="width: 20px; height: 20px; border: 2px solid var(--success); border-radius: 4px;"></div> Available
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                <div style="width: 20px; height: 20px; background: var(--success); border-radius: 4px;"></div> Selected
+            </div>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <div style="width: 20px; height: 20px; background: #f8d7da; border: 2px solid var(--danger); border-radius: 4px;"></div> Booked
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

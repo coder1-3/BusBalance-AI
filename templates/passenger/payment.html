@@ -1,0 +1,29 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="card" style="max-width: 500px; margin: 0 auto;">
+    <h2 style="border-bottom: 1px solid var(--border); padding-bottom: 10px;">Payment Gateway (Mock)</h2>
+    <div style="background: var(--light); padding: 15px; border-radius: 4px; margin-bottom: 20px;">
+        <p><strong>Route:</strong> {{ booking.route_name }}</p>
+        <p><strong>Time:</strong> {{ booking.departure_time }}</p>
+        <p><strong>Seat Selected:</strong> {{ booking.seat_number }}</p>
+        <h3 style="color: var(--success); margin: 10px 0 0 0;">Total Due: $2.50</h3>
+    </div>
+    
+    <form method="POST" action="/passenger/payment/{{ booking.id }}">
+        <div class="form-group">
+            <label>Cardholder Name</label>
+            <input type="text" placeholder="JOHN DOE" required>
+        </div>
+        <div class="form-group">
+            <label>Card Number</label>
+            <input type="text" placeholder="XXXX-XXXX-XXXX-XXXX" required>
+        </div>
+        <div style="display: flex; gap: 10px;">
+            <div class="form-group" style="flex: 1;"><label>Expiry</label><input type="text" placeholder="MM/YY" required></div>
+            <div class="form-group" style="flex: 1;"><label>CVV</label><input type="text" placeholder="123" required></div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1em; padding: 12px;">Process Payment</button>
+    </form>
+</div>
+{% endblock %}

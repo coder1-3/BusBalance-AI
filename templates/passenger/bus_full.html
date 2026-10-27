@@ -1,0 +1,14 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="card" style="text-align: center; max-width: 500px; margin: 0 auto; border-color: var(--danger);">
+    <h2 style="color: var(--danger);">Route at Full Capacity</h2>
+    <p>We apologize, but <strong>{{ schedule.route_name }}</strong> at {{ schedule.departure_time }} is fully booked.</p>
+    <p style="color: #666;">By joining the waitlist, you help our AI predictive model allocate more buses for this time slot tomorrow.</p>
+    
+    <form action="/passenger/process_waitlist/{{ schedule.id }}" method="POST" style="margin-top: 20px;">
+        <button type="submit" class="btn btn-warning" style="font-size: 1.1em; padding: 15px 30px;">Join Overflow Data Waitlist</button>
+    </form>
+    <br><a href="/passenger/dashboard" style="color: var(--primary);">Return to Routes</a>
+</div>
+{% endblock %}

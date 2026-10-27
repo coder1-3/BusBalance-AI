@@ -3,35 +3,28 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>BusBalance - City Transit System</title>
+    <title>BusBalance Authority</title>
     <link rel="stylesheet" href="/static/style.css">
 </head>
 <body>
-    <nav class="navbar">
-        <a href="/" class="navbar-brand">
-            <!-- Bus SVG Icon -->
-            <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M4 16c0 .88.39 1.67 1 2.22V20c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h8v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1.78c.61-.55 1-1.34 1-2.22V6c0-3.5-3.58-4-8-4s-8 .5-8 4v10zm3.5 1c-.83 0-1.5-.67-1.5-1.5S6.67 14 7.5 14s1.5.67 1.5 1.5S8.33 17 7.5 17zm9 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm1.5-6H6V6h12v5z"/>
-            </svg>
-            BusBalance Transit
-        </a>
-        <ul class="nav-links">
-            <li><a href="/home">Home</a></li>
+    <div class="navbar">
+        <div class="brand">🏛️ BusBalance Transit Authority</div>
+        <div>
+            <a href="/home">Home</a>
             {% if session.user_id %}
                 {% if session.role == 'passenger' %}
-                    <li><a href="/passenger/dashboard">My Dashboard</a></li>
+                    <a href="/passenger/dashboard">Book Ticket</a>
+                    <a href="/passenger/history">My History</a>
                 {% elif session.role == 'staff' %}
-                    <li><a href="/staff/dashboard">Management Portal</a></li>
-                    <li><a href="/staff/edit">Update Schedules</a></li>
+                    <a href="/staff/dashboard">Management Portal</a>
                 {% endif %}
-                <li><a href="/logout" class="btn btn-outline" style="color: white; border-color: white; padding: 0.4rem 1rem;">Sign Out</a></li>
+                <a href="/logout" style="border: 1px solid white; padding: 5px 10px; border-radius: 4px; margin-left: 20px;">Logout ({{ session.name }})</a>
             {% else %}
-                <li><a href="/login" class="btn btn-gold" style="color: black;">Sign In</a></li>
+                <a href="/login">Login</a>
+                <a href="/register">Register</a>
             {% endif %}
-        </ul>
-    </nav>
-
+        </div>
+    </div>
     <div class="container">
         {% with messages = get_flashed_messages(with_categories=true) %}
             {% if messages %}
@@ -40,13 +33,7 @@
                 {% endfor %}
             {% endif %}
         {% endwith %}
-        
         {% block content %}{% endblock %}
     </div>
-
-    <footer>
-        <p>&copy; 2026 BusBalance City Transit Authority. All rights reserved.</p>
-        <p style="font-size: 0.9rem; color: #aaa; margin-top: 5px;">Powered by Predictive Transit AI</p>
-    </footer>
 </body>
 </html>
