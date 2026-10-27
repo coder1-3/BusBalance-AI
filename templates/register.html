@@ -1,0 +1,17 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="card" style="max-width: 400px; margin: 0 auto; text-align: center;">
+    <h2>Create an Account</h2>
+    <form method="POST" action="/register" style="margin-top: 20px;">
+        <input type="text" name="name" placeholder="Full Name" required>
+        <input type="text" name="username" placeholder="Username" required>
+        <input type="password" name="password" placeholder="Password" required>
+        <select name="role">
+            <option value="passenger">Passenger</option>
+            <option value="staff">Staff (Conductor/Driver)</option>
+        </select>
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+    </form>
+</div>
+{% endblock %}

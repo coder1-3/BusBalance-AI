@@ -1,0 +1,34 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<h2>📊 Management & AI Dashboard</h2>
+<p style="color: #64748B;">Monitor capacity and overflow demand to train the AI model.</p>
+<div class="card" style="margin-top: 20px; overflow-x: auto;">
+    <table>
+        <thead>
+            <tr>
+                <th>Route</th>
+                <th>Time</th>
+                <th>Capacity</th>
+                <th>Booked</th>
+                <th><span style="color: #EF4444;">🔥 AI Overflow Demand</span></th>
+                <th>Driver</th>
+                <th>Conductor</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for s in schedules %}
+            <tr>
+                <td>{{ s.route_name }}</td>
+                <td>{{ s.departure_time }}</td>
+                <td>{{ s.capacity }}</td>
+                <td>{{ s.booked_seats }}</td>
+                <td><b style="color: #EF4444; font-size: 1.2em;">{{ s.overflow_count }}</b></td>
+                <td>{{ s.driver_name }}</td>
+                <td>{{ s.conductor_name }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

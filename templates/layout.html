@@ -1,0 +1,50 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BusBalance AI - Smart Transit</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <header>
+        <h1>🚌 BusBalance AI</h1>
+        <div class="header-actions">
+            {% if session.user_id %}
+                <span style="margin-right: 15px;">Hi, {{ session.name }} ({{ session.role|capitalize }})</span>
+                <a href="/logout" class="btn btn-warning">Logout</a>
+            {% else %}
+                <a href="/login" class="btn btn-success">Login</a>
+                <a href="/register" class="btn btn-warning">Register</a>
+            {% endif %}
+        </div>
+    </header>
+    <div class="container">
+        {% if session.user_id %}
+        <nav class="sidebar page-transition">
+            <ul>
+                <li><a href="/home">Home</a></li>
+                {% if session.role == 'passenger' %}
+                    <li><a href="/passenger/dashboard">🚍 Upcoming Buses</a></li>
+                {% elif session.role == 'staff' %}
+                    <li><a href="/staff/dashboard">📊 AI Dashboard</a></li>
+                    <li><a href="/staff/edit">⚙️ Edit Schedules</a></li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        <main class="page-transition">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+              {% if messages %}
+                {% for category, message in messages %}
+                  <div class="flash-message flash-{{ category }}">{{ message }}</div>
+                {% endfor %}
+              {% endif %}
+            {% endwith %}
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+</body>
+</html>

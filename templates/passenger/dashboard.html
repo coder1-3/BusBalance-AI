@@ -1,0 +1,29 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<h2>🚍 Upcoming Bus Schedules</h2>
+<p style="color: #64748B; margin-bottom: 20px;">Book your tickets based on AI predicted schedules.</p>
+<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+    {% for s in schedules %}
+    <div class="card">
+        <h3 style="color: var(--primary);">{{ s.route_name }}</h3>
+        <p><b>Departure:</b> {{ s.departure_time }}</p>
+        <p><b>Capacity:</b> {{ s.capacity }}</p>
+        
+        {% set perc = (s.booked_seats / s.capacity * 100)|round %}
+        <p style="margin-top: 10px; font-size: 0.9em;"><b>{{ s.booked_seats }}</b> booked</p>
+        <div class="progress-bar">
+            <div class="progress {% if s.booked_seats >= s.capacity %}full{% endif %}" style="width: {{ perc }}%;"></div>
+        </div>
+        
+        <form method="POST" action="/passenger/book/{{ s.id }}" style="margin-top: 20px;">
+            {% if s.booked_seats >= s.capacity %}
+                <button type="submit" class="btn btn-warning" style="width: 100%;">Bus Full - Add to Overflow List</button>
+            {% else %}
+                <button type="submit" class="btn btn-success" style="width: 100%;">Book Ticket</button>
+            {% endif %}
+        </form>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}

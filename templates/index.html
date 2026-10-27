@@ -1,0 +1,17 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="card" style="text-align: center; padding: 50px;">
+    <h2 style="color: var(--primary); font-size: 2.5rem; margin-bottom: 20px;">Welcome to Smart Transit</h2>
+    <p style="font-size: 1.2rem; color: #64748B;">Our AI analyzes passenger demand to deploy buses optimally.</p>
+    <br>
+    {% if not session.user_id %}
+        <p>Login to book your ticket or manage schedules.</p>
+        <br>
+        <a href="/login" class="btn btn-primary btn-lg">Get Started</a>
+    {% else %}
+        <p>Go to your dashboard to continue!</p>
+        <a href="{% if session.role == 'passenger' %}/passenger/dashboard{% else %}/staff/dashboard{% endif %}" class="btn btn-primary">Go to Dashboard</a>
+    {% endif %}
+</div>
+{% endblock %}

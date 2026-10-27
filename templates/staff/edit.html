@@ -1,0 +1,16 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<h2>⚙️ Manage Schedules</h2>
+<div class="card" style="max-width: 500px; margin-top: 20px;">
+    <h3>Add New Bus</h3>
+    <form method="POST" action="/staff/edit" style="margin-top: 15px;">
+        <input type="text" name="route_name" placeholder="Route Name" required>
+        <input type="text" name="departure_time" placeholder="Departure Time (e.g. 11:00 AM)" required>
+        <input type="number" name="capacity" placeholder="Seating Capacity" required>
+        <input type="text" name="driver_name" placeholder="Driver Name" required>
+        <input type="text" name="conductor_name" placeholder="Conductor Name" required>
+        <button type="submit" class="btn btn-primary">Add Schedule</button>
+    </form>
+</div>
+{% endblock %}
