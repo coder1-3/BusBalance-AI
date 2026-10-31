@@ -1,34 +1,42 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center;">
-    <h2>Master Schedule Management</h2>
-    <a href="/staff/add" class="btn btn-primary">+ Add New Route</a>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1 style="color: var(--brand-navy);">Operations Control</h1>
+    <a href="/staff/add" class="btn btn-primary">Add Route</a>
 </div>
-<div class="card" style="padding: 0; overflow-x: auto; margin-top: 20px;">
+<div class="card" style="padding: 0; overflow: hidden;">
     <table>
-        <thead>
+        <thead style="background: var(--border-soft);">
             <tr>
-                <th>ID</th>
-                <th>Route Name</th>
-                <th>Time</th>
-                <th>Capacity / Booked</th>
-                <th style="color: var(--danger);">Overflow (AI)</th>
-                <th>Staff (Driver/Cond)</th>
-                <th>Actions</th>
+                <th>Route ID</th>
+                <th>Route Designation</th>
+                <th>Travel Date</th>
+                <th>Departure</th>
+                <th>Occupancy</th>
+                <th style="color: var(--brand-red);">AI Overflow</th>
+                <th></th>
             </tr>
         </thead>
         <tbody>
             {% for s in schedules %}
             <tr>
-                <td>{{ s.id }}</td>
-                <td><strong>{{ s.route_name }}</strong></td>
+                <td style="color: var(--text-muted); font-weight: 600;">{{ s.id }}</td>
+                <td style="font-weight: 600; color: var(--brand-navy);">{{ s.route_name }}</td>
+                <td>{{ s.travel_date }}</td>
                 <td>{{ s.departure_time }}</td>
-                <td>{{ s.booked_seats }} / {{ s.capacity }}</td>
-                <td style="font-weight: bold; color: var(--danger);">{{ s.overflow_count }}</td>
-                <td>{{ s.driver_name }}<br><small>{{ s.conductor_name }}</small></td>
                 <td>
-                    <a href="/staff/edit/{{ s.id }}" class="btn btn-outline" style="padding: 5px 10px; font-size: 0.9em;">✏️ Edit Details</a>
+                    <div style="font-weight: 600;">{{ s.booked_seats }} / {{ s.capacity }}</div>
+                </td>
+                <td>
+                    {% if s.overflow_count > 0 %}
+                        <span style="color: var(--brand-red); font-weight: 800;">+{{ s.overflow_count }} Req</span>
+                    {% else %}
+                        <span style="color: var(--text-muted);">-</span>
+                    {% endif %}
+                </td>
+                <td style="text-align: right;">
+                    <a href="/staff/edit/{{ s.id }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Manage</a>
                 </td>
             </tr>
             {% endfor %}

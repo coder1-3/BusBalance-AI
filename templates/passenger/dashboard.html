@@ -1,16 +1,56 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<h2>Select a Route</h2>
-<div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px;">
+<div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+        <a href="/passenger/search" style="color: var(--brand-blue); text-decoration: none; font-weight: 500; font-size: 0.95rem;">&larr; Modify Search</a>
+        <h1 style="color: var(--brand-navy); margin-top: 0.5rem;">Available Routes</h1>
+        <p style="color: var(--text-muted); font-size: 1.05rem;">Results for <strong>{{ travel_date }}</strong> • {{ passenger_count }} Passenger(s)</p>
+    </div>
+</div>
+
+<div style="display: flex; flex-direction: column; gap: 1.25rem; max-width: 900px;">
     {% for s in schedules %}
-    <div class="card">
-        <h3 style="color: var(--primary); margin-top:0;">{{ s.route_name }}</h3>
-        <p><strong>Time:</strong> {{ s.departure_time }}</p>
-        <p><strong>Capacity Status:</strong> {{ s.booked_seats }} / {{ s.capacity }} Booked</p>
-        <div style="margin-top: 15px;">
-            <a href="/passenger/select_seat/{{ s.id }}" class="btn btn-primary" style="width:100%; box-sizing:border-box;">Proceed to Seat Selection</a>
+    <div class="ticket-strip">
+        <div style="flex: 2;">
+            <div style="font-size: 1.75rem; font-weight: 800; color: var(--brand-navy);">{{ s.departure_time }}</div>
+            <div style="font-size: 1.15rem; color: var(--text-muted); margin-top: 0.25rem;">{{ s.route_name }}</div>
         </div>
+        
+        <div style="flex: 2; padding: 0 2rem;">
+            {% set perc = (s.booked_seats / s.capacity * 100)|round %}
+            <div style="display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.95rem;">
+                <span style="color: var(--text-muted); font-weight: 500;">Capacity</span>
+                <span style="font-weight: 700; color: var(--text-main);">{{ s.capacity - s.booked_seats }} left</span>
+            </div>
+            <div style="width: 100%; height: 8px; background: var(--border-soft); border-radius: 4px; overflow: hidden;">
+                <div style="height: 100%; background: {% if s.booked_seats >= s.capacity %}var(--brand-red){% else %}var(--brand-blue){% endif %}; width: {{ perc }}%;"></div>
+            </div>
+        </div>
+        
+        <div style="flex: 1; text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem;">
+            {% if s.minutes_to_departure <= 15 and s.booked_seats < s.capacity %}
+                <span style="color: var(--text-muted); font-weight: 800; font-size: 1.1rem;">BOOKING CLOSED</span>
+                
+            {% elif s.booked_seats >= s.capacity %}
+                <span style="color: var(--brand-red); font-weight: 800; font-size: 1.25rem; letter-spacing: 1px;">FULL</span>
+                {% if s.minutes_to_departure <= 120 %}
+                    <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem; margin-top: 5px;">Waitlist Closed</span>
+                {% else %}
+                    <a href="/passenger/select_seat/{{ s.id }}?count={{ passenger_count }}" class="btn btn-outline" style="width: 100%;">Waitlist</a>
+                {% endif %}
+                
+            {% else %}
+                <span style="font-weight: 800; font-size: 1.5rem; color: var(--text-main);">${{ "%.2f"|format(2.50 * passenger_count|int) }}</span>
+                <a href="/passenger/select_seat/{{ s.id }}?count={{ passenger_count }}" class="btn btn-primary" style="width: 100%;">View Seats</a>
+            {% endif %}
+        </div>
+    </div>
+    {% else %}
+    <div class="card" style="text-align: center; padding: 4rem;">
+        <h3 style="color: var(--brand-navy); margin-bottom: 1rem;">No routes found</h3>
+        <p style="color: var(--text-muted);">We couldn't find any scheduled buses matching your search criteria for this date.</p>
+        <a href="/passenger/search" class="btn btn-primary" style="margin-top: 1.5rem;">Try another date</a>
     </div>
     {% endfor %}
 </div>

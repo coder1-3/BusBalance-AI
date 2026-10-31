@@ -1,34 +1,20 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<h2>{{ action }} Transit Schedule</h2>
+<h1 style="color: var(--brand-navy); margin-bottom: 2rem;">{{ action }} Route Configuration</h1>
 <div class="card" style="max-width: 600px;">
     <form method="POST">
-        <div class="form-group">
-            <label>Route Designation</label>
-            <input type="text" name="route_name" value="{{ schedule.route_name if schedule else '' }}" required>
+        <label>Route Designation</label><input type="text" name="route_name" value="{{ schedule.route_name if schedule else '' }}" required>
+        <div style="display: flex; gap: 1rem;">
+            <div style="flex: 1;"><label>Travel Date</label><input type="date" name="travel_date" value="{{ schedule.travel_date if schedule else '' }}" required></div>
+            <div style="flex: 1;"><label>Departure Time</label><input type="text" name="departure_time" value="{{ schedule.departure_time if schedule else '' }}" required></div>
         </div>
-        <div class="form-group">
-            <label>Departure Time</label>
-            <input type="text" name="departure_time" value="{{ schedule.departure_time if schedule else '' }}" required>
+        <label>Capacity</label><input type="number" name="capacity" value="{{ schedule.capacity if schedule else '' }}" required>
+        <div style="display: flex; gap: 1rem;">
+            <div style="flex: 1;"><label>Driver</label><input type="text" name="driver_name" value="{{ schedule.driver_name if schedule else '' }}" required></div>
+            <div style="flex: 1;"><label>Conductor</label><input type="text" name="conductor_name" value="{{ schedule.conductor_name if schedule else '' }}" required></div>
         </div>
-        <div class="form-group">
-            <label>Vehicle Capacity (Total Seats)</label>
-            <input type="number" name="capacity" value="{{ schedule.capacity if schedule else '' }}" required>
-        </div>
-        <div class="form-group">
-            <label>Assigned Driver</label>
-            <input type="text" name="driver_name" value="{{ schedule.driver_name if schedule else '' }}" required>
-        </div>
-        <div class="form-group">
-            <label>Assigned Conductor</label>
-            <input type="text" name="conductor_name" value="{{ schedule.conductor_name if schedule else '' }}" required>
-        </div>
-        
-        <div style="margin-top: 20px;">
-            <button type="submit" class="btn btn-primary">{{ action }} Schedule</button>
-            <a href="/staff/dashboard" class="btn btn-outline" style="margin-left: 10px;">Cancel</a>
-        </div>
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Save</button>
     </form>
 </div>
 {% endblock %}

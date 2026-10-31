@@ -1,19 +1,85 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<div class="card" style="text-align: center; padding: 4rem 2rem;">
-    <h1 style="color: var(--primary); font-size: 2.5rem;">Official Transit Portal</h1>
-    <p style="font-size: 1.2rem; color: #555; max-width: 600px; margin: 1rem auto;">
-        Welcome to the centralized booking and management system for the city transit authority. 
-        Secure your seats, download e-tickets, and travel efficiently.
-    </p>
-    <div style="margin-top: 2rem;">
-        {% if not session.user_id %}
-            <a href="/login" class="btn btn-primary" style="margin-right: 10px;">Login to Portal</a>
-            <a href="/register" class="btn btn-outline">New Registration</a>
-        {% else %}
-            <a href="{% if session.role == 'passenger' %}/passenger/dashboard{% else %}/staff/dashboard{% endif %}" class="btn btn-primary">Enter Dashboard</a>
-        {% endif %}
+<div style="background: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?auto=format&fit=crop&q=80&w=1200&h=400') center/cover; border-radius: 20px; overflow: hidden; margin-bottom: 3rem; position: relative;">
+    <div style="position: absolute; top:0; left:0; right:0; bottom:0; background: linear-gradient(to right, rgba(15,23,42,0.95) 0%, rgba(15,23,42,0.7) 100%);"></div>
+    
+    <div style="position: relative; z-index: 1; padding: 6rem 4rem; color: white; display: flex; flex-direction: column; align-items: flex-start; max-width: 800px;">
+        <div style="display: inline-block; padding: 0.5rem 1rem; background: rgba(56, 189, 248, 0.2); border: 1px solid rgba(56, 189, 248, 0.4); color: #38bdf8; border-radius: 20px; font-weight: 600; font-size: 0.9rem; margin-bottom: 1.5rem;">
+            Powered by AI Demand Forecasting
+        </div>
+        <h1 style="font-size: 4rem; font-weight: 800; line-height: 1.1; margin-bottom: 1.5rem; letter-spacing: -1px;">Smarter Transit.<br>A Smoother Journey.</h1>
+        <p style="font-size: 1.25rem; color: #cbd5e1; margin-bottom: 3rem; max-width: 600px; line-height: 1.6;">
+            Leverage AI to predict passenger demand and optimize schedules. Book your seat instantly and help build a more connected, greener city.
+        </p>
+        
+        <div style="background: rgba(255,255,255,0.1); backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.2); border-radius: 12px; padding: 1.5rem 2rem; display: flex; align-items: center; gap: 2rem;">
+            <div>
+                <div style="font-size: 0.9rem; color: #94a3b8; text-transform: uppercase; font-weight: 700; margin-bottom: 0.5rem;">Ready to travel?</div>
+                <div style="font-size: 1.2rem; font-weight: 600;">Find your route today.</div>
+            </div>
+            <a href="/passenger/search" class="btn btn-primary" style="font-size: 1.1rem; padding: 1rem 2rem; display: flex; align-items: center; gap: 10px;">
+                Explore Routes &rarr;
+            </a>
+        </div>
     </div>
 </div>
+
+<div class="card" style="margin-bottom: 3rem;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; border-bottom: 1px solid var(--border-soft); padding-bottom: 1rem;">
+        <div>
+            <h2 style="color: var(--brand-navy); margin-bottom: 0.5rem;">Today's Live Schedule</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem;">Departures for {{ today_date }}</p>
+        </div>
+        <input type="text" id="homeSearch" onkeyup="filterHomeTable()" placeholder="Search routes or times..." style="width: 300px; margin: 0;">
+    </div>
+    
+    <div style="overflow-x: auto;">
+        <table id="homeTable">
+            <thead style="background: var(--bg-color);">
+                <tr>
+                    <th>Departure Time</th>
+                    <th>Route Designation</th>
+                    <th>Availability</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for s in today_schedules %}
+                <tr>
+                    <td style="font-weight: 700; font-size: 1.1rem; color: var(--brand-navy);">{{ s.departure_time }}</td>
+                    <td style="font-weight: 600;">{{ s.route_name }}</td>
+                    <td>
+                        <div style="display: flex; align-items: center; gap: 1rem;">
+                            <span style="font-weight: 600; font-size: 0.95rem;">{{ s.capacity - s.booked_seats }} seats left</span>
+                            <div style="width: 100px; height: 6px; background: var(--border-soft); border-radius: 3px; overflow: hidden;">
+                                <div style="height: 100%; background: {% if s.booked_seats >= s.capacity %}var(--brand-red){% else %}var(--brand-blue){% endif %}; width: {{ (s.booked_seats / s.capacity * 100)|round }}%;"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        {% if s.minutes_to_departure <= 15 %}
+                            <span style="color: var(--text-muted); font-weight: 600; font-size: 0.9rem;">Booking Closed</span>
+                        {% else %}
+                            <a href="/passenger/select_seat/{{ s.id }}?count=1" class="btn btn-outline" style="padding: 0.5rem 1rem; font-size: 0.9rem;">Book Now</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function filterHomeTable() {
+    let input = document.getElementById("homeSearch").value.toUpperCase();
+    let table = document.getElementById("homeTable");
+    let tr = table.getElementsByTagName("tr");
+    for (let i = 1; i < tr.length; i++) {
+        let txtValue = tr[i].textContent || tr[i].innerText;
+        tr[i].style.display = txtValue.toUpperCase().indexOf(input) > -1 ? "" : "none";
+    }
+}
+</script>
 {% endblock %}

@@ -1,44 +1,56 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<h2>My Booking History</h2>
-<div class="card">
-    <table>
-        <thead>
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+    <h1 style="color: var(--brand-navy);">My Trips</h1>
+    <input type="text" id="historySearch" onkeyup="filterHistory()" placeholder="Search by Route, ID, or Date..." style="width: 300px; margin-bottom: 0;">
+</div>
+
+<div class="card" style="padding: 0; overflow: hidden;">
+    <table id="historyTable">
+        <thead style="background: var(--border-soft);">
             <tr>
-                <th>Booking ID</th>
-                <th>Route & Time</th>
-                <th>Seat</th>
+                <th>Booking Ref</th>
+                <th>Trip Details</th>
+                <th>Seat(s)</th>
+                <th>Paid</th>
                 <th>Status</th>
-                <th>Date</th>
-                <th>Action</th>
+                <th>Actions</th>
             </tr>
         </thead>
         <tbody>
             {% for h in history %}
             <tr>
-                <td>#{{ h.id }}</td>
-                <td>{{ h.route_name }}<br><small style="color: #666;">{{ h.departure_time }}</small></td>
-                <td>{{ h.seat_number if h.seat_number else 'N/A' }}</td>
+                <td style="font-weight: 600;">#{{ h.id }}</td>
                 <td>
-                    <span class="badge badge-{{ h.status }}">{{ h.status|upper }}</span>
+                    <div style="font-weight: 600; color: var(--brand-navy);">{{ h.route_name }}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">{{ h.travel_date }} • {{ h.departure_time }}</div>
                 </td>
-                <td>{{ h.booking_time[:10] }}</td>
+                <td style="font-weight: 600; color: var(--brand-blue);">{{ h.seats }}</td>
+                <td style="font-weight: 600;">${{ "%.2f"|format(h.total_cost) }}</td>
+                <td><span class="badge">{{ h.status|upper }}</span></td>
                 <td>
                     {% if h.status == 'confirmed' %}
-                        <a href="/passenger/download_ticket/{{ h.id }}" class="btn btn-success" style="font-size: 0.85em; padding: 5px 10px;">📄 Download E-Ticket</a>
+                        <a href="/passenger/download_ticket/{{ h.id }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Ticket</a>
                     {% elif h.status == 'pending' %}
-                        <a href="/passenger/payment/{{ h.id }}" class="btn btn-warning" style="font-size: 0.85em; padding: 5px 10px;">Complete Payment</a>
-                    {% else %}
-                        <span style="color: #666; font-size: 0.9em;">Waitlisted</span>
+                        <a href="/passenger/payment/{{ h.id }}" class="btn btn-primary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Pay</a>
                     {% endif %}
                 </td>
             </tr>
             {% endfor %}
         </tbody>
     </table>
-    {% if not history %}
-        <p style="text-align: center; color: #666; margin-top: 20px;">No previous bookings found.</p>
-    {% endif %}
 </div>
+
+<script>
+function filterHistory() {
+    let input = document.getElementById("historySearch").value.toUpperCase();
+    let table = document.getElementById("historyTable");
+    let tr = table.getElementsByTagName("tr");
+    for (let i = 1; i < tr.length; i++) {
+        let txtValue = tr[i].textContent || tr[i].innerText;
+        tr[i].style.display = txtValue.toUpperCase().indexOf(input) > -1 ? "" : "none";
+    }
+}
+</script>
 {% endblock %}

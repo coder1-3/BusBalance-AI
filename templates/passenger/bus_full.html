@@ -1,14 +1,19 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<div class="card" style="text-align: center; max-width: 500px; margin: 0 auto; border-color: var(--danger);">
-    <h2 style="color: var(--danger);">Route at Full Capacity</h2>
-    <p>We apologize, but <strong>{{ schedule.route_name }}</strong> at {{ schedule.departure_time }} is fully booked.</p>
-    <p style="color: #666;">By joining the waitlist, you help our AI predictive model allocate more buses for this time slot tomorrow.</p>
-    
-    <form action="/passenger/process_waitlist/{{ schedule.id }}" method="POST" style="margin-top: 20px;">
-        <button type="submit" class="btn btn-warning" style="font-size: 1.1em; padding: 15px 30px;">Join Overflow Data Waitlist</button>
-    </form>
-    <br><a href="/passenger/dashboard" style="color: var(--primary);">Return to Routes</a>
+<div class="card" style="text-align: center; max-width: 500px; margin: 4rem auto; border: 2px solid var(--brand-red);">
+    <h2 style="color: var(--brand-navy); margin-bottom: 1rem;">Route at Capacity</h2>
+    <p>We apologize, but <strong>{{ schedule.route_name }}</strong> is fully booked.</p>
+    {% if mins <= 120 %}
+    <div style="background: var(--bg-light); padding: 1rem; border-radius: 8px; margin-bottom: 2rem;">
+        <p style="color: var(--brand-red); font-weight: bold; margin: 0;">The Waitlist is now closed for this route (under 2 hours to departure).</p>
+    </div>
+    <a href="/passenger/search" class="btn btn-outline" style="width: 100%;">Return to Search</a>
+    {% else %}
+        <form action="/passenger/process_waitlist/{{ schedule.id }}" method="POST">
+            <button type="submit" class="btn btn-danger" style="width: 100%; margin: 1rem 0;">Join Waitlist</button>
+        </form>
+        <a href="/passenger/search" class="btn btn-outline" style="width: 100%;">Return to Search</a>
+    {% endif %}
 </div>
 {% endblock %}

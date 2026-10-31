@@ -1,41 +1,50 @@
 
 {% extends "layout.html" %}
 {% block content %}
-<h2>Seat Selection: {{ schedule.route_name }} ({{ schedule.departure_time }})</h2>
-<div style="display: flex; gap: 30px; flex-wrap: wrap;">
-    <div style="flex: 1; min-width: 300px;">
-        <form method="POST" action="/passenger/checkout">
-            <input type="hidden" name="schedule_id" value="{{ schedule.id }}">
-            <div class="bus-layout">
+<h2 style="color: var(--brand-navy); margin-bottom: 2rem;">Select {{ passenger_count }} Seat(s)</h2>
+
+<form method="POST" action="/passenger/checkout">
+    <input type="hidden" name="schedule_id" value="{{ schedule.id }}">
+    <input type="hidden" name="passenger_count" value="{{ passenger_count }}">
+    
+    <div style="display: flex; gap: 3rem;">
+        <div class="card" style="width: 340px; margin: 0 auto; border-radius: 40px 40px 12px 12px; padding: 2rem; border-top: 8px solid var(--border-soft);">
+            <div class="seat-grid">
                 {% for i in range(1, schedule.capacity + 1) %}
                     {% if i in booked_seats %}
                         <div class="seat-booked">{{ i }}</div>
                     {% else %}
                         <label class="seat-label">
-                            <input type="radio" name="seat_number" value="{{ i }}" required>
+                            <input type="checkbox" name="seat_number" value="{{ i }}" class="seat-checkbox">
                             <span>{{ i }}</span>
                         </label>
                     {% endif %}
                 {% endfor %}
             </div>
-            <div style="text-align: center; margin-top: 20px;">
-                <button type="submit" class="btn btn-success" style="padding: 12px 30px; font-size: 1.1em;">Confirm Seat & Proceed to Payment</button>
-            </div>
-        </form>
-    </div>
-    <div style="flex: 1; min-width: 300px;">
-        <div class="card">
-            <h3>Legend</h3>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                <div style="width: 20px; height: 20px; border: 2px solid var(--success); border-radius: 4px;"></div> Available
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
-                <div style="width: 20px; height: 20px; background: var(--success); border-radius: 4px;"></div> Selected
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 20px; height: 20px; background: #f8d7da; border: 2px solid var(--danger); border-radius: 4px;"></div> Booked
-            </div>
+        </div>
+        
+        <div class="card" style="width: 300px; height: fit-content; position: sticky; top: 2rem;">
+            <h3>Summary</h3>
+            <p style="margin-top: 1rem; color: var(--text-muted);">Select exactly <b style="color: var(--brand-navy);">{{ passenger_count }}</b> seat(s).</p>
+            <button type="submit" class="btn btn-primary" id="checkoutBtn" style="width: 100%; margin-top: 2rem;" disabled>Proceed to Payment</button>
         </div>
     </div>
-</div>
+</form>
+
+<script>
+    const maxSeats = parseInt("{{ passenger_count }}");
+    const checkboxes = document.querySelectorAll('.seat-checkbox');
+    const checkoutBtn = document.getElementById('checkoutBtn');
+    
+    checkboxes.forEach(cb => {
+        cb.addEventListener('change', () => {
+            const checkedCount = document.querySelectorAll('.seat-checkbox:checked').length;
+            if (checkedCount > maxSeats) {
+                cb.checked = false;
+                alert(`Your search was for ${maxSeats} passenger(s).`);
+            }
+            checkoutBtn.disabled = document.querySelectorAll('.seat-checkbox:checked').length !== maxSeats;
+        });
+    });
+</script>
 {% endblock %}

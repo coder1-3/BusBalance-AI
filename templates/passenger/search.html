@@ -1,0 +1,67 @@
+
+{% extends "layout.html" %}
+{% block content %}
+<div class="card" style="max-width: 700px; margin: 2rem auto;">
+    <h1 style="color: var(--brand-navy); margin-bottom: 0.5rem;">Search Routes</h1>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Schedules are generated up to 7 days in advance based on AI forecasting.</p>
+    
+    <form method="POST" action="/passenger/search" autocomplete="off">
+        <div class="form-group" style="position: relative;">
+            <label>Destination / Route Name</label>
+            <input type="text" id="routeInput" name="route_query" placeholder="e.g. Central Hub">
+            <div id="autocomplete-list" class="autocomplete-items"></div>
+        </div>
+        
+        <div style="display: flex; gap: 1.5rem;">
+            <div class="form-group" style="flex: 2;">
+                <label>Date of Travel (7-Day Window)</label>
+                <input type="text" name="travel_date" class="date-picker" placeholder="Select Date..." value="{{ min_date }}" data-min-date="{{ min_date }}" data-max-date="{{ max_date }}" required>
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>Passengers</label>
+                <input name="passenger_count" type="text" required>
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1.1rem; margin-top: 1rem; padding: 1rem;">Search Available Buses</button>
+    </form>
+</div>
+
+<script>
+document.getElementById('routeInput').addEventListener('input', function() {
+    let val = this.value;
+    let listNode = document.getElementById('autocomplete-list');
+    listNode.innerHTML = '';
+    
+    if (!val) return false;
+    
+    fetch('/api/routes?q=' + val)
+        .then(response => response.json())
+        .then(data => {
+            data.forEach(item => {
+                let div = document.createElement('div');
+                let regex = new RegExp(`(${val})`, "gi");
+                div.innerHTML = item.replace(regex, "<strong>$1</strong>");
+                div.innerHTML += `<input type='hidden' value='${item}'>`;
+                
+                div.addEventListener('click', function() {
+                    document.getElementById('routeInput').value = this.getElementsByTagName('input')[0].value;
+                    listNode.innerHTML = '';
+                });
+                listNode.appendChild(div);
+            });
+        });
+});
+document.addEventListener('click', function (e) {
+    if (e.target.id !== "routeInput") {
+        document.getElementById('autocomplete-list').innerHTML = '';
+    }
+});
+
+flatpickr(".date-picker", {
+    dateFormat: "Y-m-d",
+    minDate: "today",
+    maxDate: new Date().fp_incr(7)
+});
+</script>
+{% endblock %}
