@@ -1,3 +1,11 @@
 Flask==3.0.0
 Werkzeug==3.0.1
 reportlab==4.0.7
+APScheduler==3.10.4
+pandas
+numpy
+scikit-learn
+ortools
+joblib
+pydantic
+fastapi

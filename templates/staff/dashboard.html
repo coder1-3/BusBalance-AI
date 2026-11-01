@@ -1,46 +1,109 @@
 
 {% extends "layout.html" %}
+
+{% block head %}
+    <style>
+        /* 1. Base Text Colors (Search label, text, info, page numbers) */
+        html[data-theme="dark"] .dataTables_wrapper, 
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_length label, 
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_filter label, 
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_info,
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button {
+            color: #e2e8f0 !important; 
+        }
+
+        /* 2. Inputs: Search Bar, Dropdown, and Dropdown Options */
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_filter input, 
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_length select,
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_length select option {
+            background-color: #1e293b !important;
+            color: #f8fafc !important;
+            border: 1px solid #475569 !important;
+        }
+
+        /* 3. Pagination Button (Active State) */
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.current, 
+        html[data-theme="dark"] .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background-color: #3b82f6 !important;
+            color: white !important;
+            border: none !important;
+        }
+
+        /* 4. Table Rows Background (Forces table to inherit your dark theme background) */
+        html[data-theme="dark"] table.dataTable tbody tr {
+            background-color: transparent !important;
+        }
+    </style>
+{% endblock %}
+
 {% block content %}
-<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
-    <h1 style="color: var(--brand-navy);">Operations Control</h1>
-    <a href="/staff/add" class="btn btn-primary">Add Route</a>
-</div>
-<div class="card" style="padding: 0; overflow: hidden;">
-    <table>
-        <thead style="background: var(--border-soft);">
-            <tr>
-                <th>Route ID</th>
-                <th>Route Designation</th>
-                <th>Travel Date</th>
-                <th>Departure</th>
-                <th>Occupancy</th>
-                <th style="color: var(--brand-red);">AI Overflow</th>
-                <th></th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for s in schedules %}
-            <tr>
-                <td style="color: var(--text-muted); font-weight: 600;">{{ s.id }}</td>
-                <td style="font-weight: 600; color: var(--brand-navy);">{{ s.route_name }}</td>
-                <td>{{ s.travel_date }}</td>
-                <td>{{ s.departure_time }}</td>
-                <td>
-                    <div style="font-weight: 600;">{{ s.booked_seats }} / {{ s.capacity }}</div>
-                </td>
-                <td>
-                    {% if s.overflow_count > 0 %}
-                        <span style="color: var(--brand-red); font-weight: 800;">+{{ s.overflow_count }} Req</span>
-                    {% else %}
-                        <span style="color: var(--text-muted);">-</span>
-                    {% endif %}
-                </td>
-                <td style="text-align: right;">
-                    <a href="/staff/edit/{{ s.id }}" class="btn btn-outline" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;">Manage</a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-</div>
+<!-- 1. Add DataTables CSS at the top of your file (or in layout.html) -->
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+
+<!-- 2. Update your table to include the new columns and give it the id "operationsTable" -->
+<table id="operationsTable" class="table table-striped table-hover">
+    <thead>
+        <tr>
+            <th>Schedule ID</th>
+            <th>Route Name</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Capacity</th>
+            <th>Booked</th>
+            <th>Overflow</th> <!-- Restored Header -->
+            <th>Driver</th>
+            <th>Conductor</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for schedule in schedules %}
+        <tr>
+            <td>#{{ schedule.id }}</td>
+            <td>{{ schedule.route_name }}</td>
+            <td>{{ schedule.travel_date }}</td>
+            <td>{{ schedule.departure_time }}</td>
+            <td>{{ schedule.capacity }}</td>
+            <td>{{ schedule.booked_seats }}</td>
+            <td>
+                {% if schedule.overflow_count > 0 %}
+                    <span class="text-danger fw-bold">{{ schedule.overflow_count }}</span>
+                {% else %}
+                    0
+                {% endif %}
+            </td>
+            <td>{{ schedule.driver_name }}</td>
+            <td>{{ schedule.conductor_name }}</td>
+            <td>
+                <a href="/staff/edit/{{ schedule.id }}" class="btn btn-sm btn-primary">Edit</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- 3. Add jQuery and DataTables Scripts at the very bottom of the file -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+    $(document).ready(function() {
+        $('#operationsTable').DataTable({
+            // Limit to 25 rows per page to keep the UI clean
+            "pageLength": 25, 
+            
+            // Provide length options for staff
+            "lengthMenu": [ [10, 25, 50, -1], [10, 25, 50, "All"] ],
+            
+            // Default sort by Date (column index 2) then Time (column index 3)
+            "order": [[ 2, "asc" ], [ 3, "asc" ]], 
+            
+            // Customize the search bar text
+            "language": {
+                "search": "Filter (Route, Driver, Date, etc.):",
+                "lengthMenu": "Display _MENU_ schedules per page"
+            }
+        });
+    });
+</script>
 {% endblock %}

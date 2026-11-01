@@ -2,15 +2,22 @@
 from flask import Flask, render_template, request, redirect, session, flash, g, send_file, jsonify
 import sqlite3
 import os
+import threading
 import io
 import json
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
-
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
+from apscheduler.schedulers.background import BackgroundScheduler
+import atexit
+
+# Clean imports reading directly from your new 'backend' folder
+from AI_models.data_pipeline import DataStore, ROUTES_SPEC
+from AI_models.forecast_engine import ForecastEngine
+from AI_models.optimizer_engine import ScheduleOptimizer
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_transit_v7'
@@ -74,6 +81,85 @@ def init_db():
             conn.commit()
 
 init_db()
+
+def run_daily_ai_pipeline():
+    """Runs in the background to forecast demand and generate future schedules."""
+    print("[AI Pipeline] Starting background schedule generation...")
+    try:
+        from datetime import datetime, timedelta
+        import sqlite3
+        
+        # 1. Generate/Update historical synthetic data
+        data_store = DataStore.get_instance()
+        df = data_store.initialize_data(force_refresh=True)
+
+        # 2. Run Machine Learning Forecast (Trains models on historical data)
+        forecast_engine = ForecastEngine.get_instance()
+        forecast_engine.train_and_evaluate(df, test_days=7)
+
+        # 3. Optimize Fleet Allocation
+        optimizer = ScheduleOptimizer.get_instance()
+        result = optimizer.optimize_schedule(
+            predictions_df=forecast_engine.latest_predictions_df,
+            total_fleet_limit=26
+        )
+        
+        # 4. Project the optimized schedule into ANY missing FUTURE dates
+        slot_schedule = result["slot_schedule"]
+        
+        with sqlite3.connect(DATABASE) as conn:
+            c = conn.cursor()
+            
+            # Loop exactly from Day 0 (Today) through Day 7
+            for d in range(8):
+                check_date = (datetime.now() + timedelta(days=d)).strftime('%Y-%m-%d')
+                
+                # Check if this specific date is missing schedules
+                count = c.execute("SELECT COUNT(id) FROM schedules WHERE travel_date = ? LIMIT 1", (check_date,)).fetchone()[0]
+                
+                if count == 0:
+                    print(f"[AI Pipeline] Generating missing schedule for {check_date}...")
+                    for slot in slot_schedule:
+                        if slot["proposed_buses"] > 0:
+                            route_name = ROUTES_SPEC[slot["route_id"]]["route_name"]
+                            time_obj = datetime.strptime(slot["time_str"], "%H:%M")
+                            formatted_time = time_obj.strftime("%I:%M %p")
+                            
+                            c.execute('''INSERT INTO schedules 
+                                         (route_name, travel_date, departure_time, capacity, booked_seats, overflow_count, driver_name, conductor_name) 
+                                         VALUES (?, ?, ?, ?, ?, ?, ?, ?)''',
+                                      (route_name, check_date, formatted_time, 50, 0, 0, "AI Auto-Assigned", "AI Auto-Assigned"))
+            conn.commit()
+            
+        print("[AI Pipeline] Successfully injected future optimized schedules.")
+        
+    except Exception as e:
+        print(f"[AI Pipeline] Critical Error during generation: {e}")
+
+# Boot up the background scheduler
+scheduler = BackgroundScheduler()
+
+# Schedule the AI to run every night at 2:00 AM
+scheduler.add_job(func=run_daily_ai_pipeline, trigger="cron", hour=2, minute=0)
+scheduler.start()
+
+# Safely shut down the scheduler if the Flask server stops
+atexit.register(lambda: scheduler.shutdown())
+
+# ONE-TIME STARTUP CHECK: Ensure Today through Day 7 exist without gaps
+
+with sqlite3.connect(DATABASE) as conn:
+    missing_days = False
+    for d in range(8):
+        check_date = (datetime.now() + timedelta(days=d)).strftime('%Y-%m-%d')
+        count = conn.execute("SELECT COUNT(id) FROM schedules WHERE travel_date = ?", (check_date,)).fetchone()[0]
+        if count == 0:
+            missing_days = True
+            break
+            
+    if missing_days:
+        print("Missing future schedules detected in the 7-day window. Triggering AI generation...")
+        threading.Thread(target=run_daily_ai_pipeline).start()
 
 def get_minutes_to_departure(travel_date_str, time_str):
     """Calculates minutes remaining until departure. Returns 9999 if parsing fails."""
