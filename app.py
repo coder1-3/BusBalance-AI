@@ -14,7 +14,7 @@ from reportlab.lib import colors
 
 app = Flask(__name__)
 app.secret_key = 'super_secret_transit_v7'
-DATABASE = 'busbalance_v7.db'
+DATABASE = 'busbalance.db'
 
 def get_db():
     db = getattr(g, '_database', None)
@@ -65,23 +65,12 @@ def init_db():
             c.execute('''CREATE TABLE schedules (id INTEGER PRIMARY KEY, route_name TEXT, travel_date TEXT, departure_time TEXT, capacity INTEGER, booked_seats INTEGER DEFAULT 0, overflow_count INTEGER DEFAULT 0, driver_name TEXT, conductor_name TEXT)''')
             c.execute('''CREATE TABLE bookings (id INTEGER PRIMARY KEY, user_id INTEGER, schedule_id INTEGER, status TEXT, seat_number TEXT, total_cost REAL, booking_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP)''')
             
+            # Keep only the default login accounts so you aren't locked out
             c.execute("INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)", ('admin', generate_password_hash('admin'), 'Transport Manager', 'staff'))
             c.execute("INSERT INTO users (username, password, name, role) VALUES (?, ?, ?, ?)", ('user', generate_password_hash('user'), 'John Passenger', 'passenger'))
             
-            # Generate 7 days of dummy data
-            schedules = []
-            routes = [
-                ('Route 101 - Central Hub', '08:00 AM', 40, 'Robert D.', 'Michael S.'),
-                ('Route 205 - Financial Dist', '09:15 AM', 40, 'Sarah C.', 'James T.'),
-                ('Route 304 - Suburbs', '10:30 AM', 32, 'David W.', 'Linda K.')
-            ]
+            # All dummy route generation has been permanently deleted here.
             
-            for i in range(7):
-                date_str = (datetime.now() + timedelta(days=i)).strftime('%Y-%m-%d')
-                for r in routes:
-                    schedules.append((r[0], date_str, r[1], r[2], 0, 0, r[3], r[4]))
-                    
-            c.executemany("INSERT INTO schedules (route_name, travel_date, departure_time, capacity, booked_seats, overflow_count, driver_name, conductor_name) VALUES (?, ?, ?, ?, ?, ?, ?, ?)", schedules)
             conn.commit()
 
 init_db()
@@ -169,36 +158,45 @@ def api_routes():
 @login_required
 @passenger_access
 def search():
+    # Dynamically calculate the 7-day window based on server time
+    today_dt = datetime.now()
+    today_str = today_dt.strftime('%Y-%m-%d')
+    max_dt = today_dt + timedelta(days=7)
+    max_date_str = max_dt.strftime('%Y-%m-%d')
+
     if request.method == 'POST':
         route_query = request.form.get('route_query', '').lower()
         travel_date = request.form.get('travel_date')
-        try:
-            passenger_count = int(request.form.get('passenger_count'))
-        except:
-            passenger_count = 1
+        passenger_count = request.form.get('passenger_count', 1)
+        
+        # Backend Security: Block queries for past dates or dates beyond 7 days
+        if travel_date < today_str or travel_date > max_date_str:
+            flash("Please select a valid date within the next 7 days.", "error")
+            return redirect('/passenger/search')
+        
         db = get_db()
         query = "SELECT * FROM schedules WHERE travel_date = ?"
         params = [travel_date]
+        
         if route_query:
             query += " AND LOWER(route_name) LIKE ?"
             params.append(f"%{route_query}%")
-        # ... inside search() POST block ...
+            
         raw_schedules = db.execute(query, params).fetchall()
         
         schedules = []
         for s in raw_schedules:
+            # Using the helper function to filter out buses that already departed today
             mins = get_minutes_to_departure(s['travel_date'], s['departure_time'])
-            if mins > 0: # Only pass future buses
+            if mins > 0: 
                 s_dict = dict(s)
                 s_dict['minutes_to_departure'] = mins
                 schedules.append(s_dict)
                 
         return render_template('passenger/dashboard.html', schedules=schedules, passenger_count=passenger_count, travel_date=travel_date)
         
-    # Default to tomorrow for the calendar
-    tomorrow = (datetime.now() + timedelta(days=1)).strftime('%Y-%m-%d')
-    max_date = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
-    return render_template('passenger/search.html', min_date=tomorrow, max_date=max_date)
+    # GET request: Pass the exact live dates to the Flatpickr calendar
+    return render_template('passenger/search.html', min_date=today_str, max_date=max_date_str)
 
 @app.route('/passenger/select_seat/<int:schedule_id>')
 @login_required

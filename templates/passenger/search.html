@@ -60,8 +60,8 @@ document.addEventListener('click', function (e) {
 
 flatpickr(".date-picker", {
     dateFormat: "Y-m-d",
-    minDate: "today",
-    maxDate: new Date().fp_incr(7)
+    minDate: "{{ min_date }}",
+    maxDate: "{{ max_date }}"
 });
 </script>
 {% endblock %}
