@@ -27,7 +27,7 @@
                     <div style="font-size: 0.85rem; color: var(--text-muted);">{{ h.travel_date }} • {{ h.departure_time }}</div>
                 </td>
                 <td style="font-weight: 600; color: var(--brand-blue);">{{ h.seats }}</td>
-                <td style="font-weight: 600;">${{ "%.2f"|format(h.total_cost) }}</td>
+                <td style="font-weight: 600;">₹{{ "%.2f"|format(h.total_cost) }}</td>
                 <td><span class="badge">{{ h.status|upper }}</span></td>
                 <td>
                     {% if h.status == 'confirmed' %}

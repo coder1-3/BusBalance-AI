@@ -514,7 +514,7 @@ def download_ticket(booking_id):
     # Row 1 (Bottom) Data
     p.setFont("Helvetica-Bold", 11)
     p.drawString(grid_x + 10, grid_y + row_h - 30, str(ticket['departure_time']))
-    p.drawString(grid_x + 126, grid_y + row_h - 30, f"${ticket['total_cost']:.2f}")
+    p.drawString(grid_x + 126, grid_y + row_h - 30, f"₹{ticket['total_cost']:.2f}")
     p.drawString(grid_x + 243, grid_y + row_h - 30, str(ticket['booking_time'][:10]))
     
     # --- RIGHT SECTION: STUB & BARCODE ---

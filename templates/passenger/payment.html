@@ -16,12 +16,12 @@
             </div>
             <div style="display: flex; justify-content: space-between; margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed var(--border-soft);">
                 <span style="color: var(--text-muted); font-weight: 600;">Total Amount</span>
-                <span style="font-weight: 800; color: var(--brand-blue); font-size: 1.2rem;">${{ "%.2f"|format(booking.total_cost) }}</span>
+                <span style="font-weight: 800; color: var(--brand-blue); font-size: 1.2rem;">₹{{ "%.2f"|format(booking.total_cost) }}</span>
             </div>
         </div>
         
         <form method="POST" action="/passenger/payment/{{ booking.id }}">
-            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; font-size: 1.1rem; padding: 1rem;">Pay ${{ "%.2f"|format(booking.total_cost) }}</button>
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem; font-size: 1.1rem; padding: 1rem;">Pay ₹{{ "%.2f"|format(booking.total_cost) }}</button>
         </form>
     </div>
 </div>
