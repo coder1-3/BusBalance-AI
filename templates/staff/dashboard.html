@@ -61,7 +61,7 @@
         <tr>
             <td>#{{ schedule.id }}</td>
             <td>{{ schedule.route_name }}</td>
-            <td>{{ schedule.travel_date }}</td>
+            <td>{{ schedule.travel_date[8:10] }}-{{ schedule.travel_date[5:7] }}-{{ schedule.travel_date[0:4] }}</td>
             <td>{{ schedule.departure_time }}</td>
             <td>{{ schedule.capacity }}</td>
             <td>{{ schedule.booked_seats }}</td>

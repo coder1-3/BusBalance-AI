@@ -41,7 +41,7 @@
                 {% endif %}
                 
             {% else %}
-                <span style="font-weight: 800; font-size: 1.5rem; color: var(--text-main);">${{ "%.2f"|format(2.50 * passenger_count|int) }}</span>
+                <span style="font-weight: 800; font-size: 1.5rem; color: var(--text-main);">₹{{ "%.2f"|format(2.50 * passenger_count|int) }}</span>
                 <a href="/passenger/select_seat/{{ s.id }}?count={{ passenger_count }}" class="btn btn-primary" style="width: 100%;">View Seats</a>
             {% endif %}
         </div>

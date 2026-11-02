@@ -24,7 +24,7 @@
                 <td style="font-weight: 600;">#{{ h.id }}</td>
                 <td>
                     <div style="font-weight: 600; color: var(--brand-navy);">{{ h.route_name }}</div>
-                    <div style="font-size: 0.85rem; color: var(--text-muted);">{{ h.travel_date }} • {{ h.departure_time }}</div>
+                    <div style="font-size: 0.85rem; color: var(--text-muted);">{{ h.travel_date[8:10] }}-{{ h.travel_date[5:7] }}-{{ h.travel_date[0:4] }} • {{ h.departure_time }}</div>
                 </td>
                 <td style="font-weight: 600; color: var(--brand-blue);">{{ h.seats }}</td>
                 <td style="font-weight: 600;">₹{{ "%.2f"|format(h.total_cost) }}</td>

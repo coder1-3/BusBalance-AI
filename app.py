@@ -5,6 +5,10 @@ import os
 import threading
 import io
 import json
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+from reportlab.platypus import Paragraph
+from reportlab.lib.styles import getSampleStyleSheet
 from functools import wraps
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime, timedelta
@@ -409,11 +413,13 @@ def passenger_history():
         
     return render_template('passenger/history.html', history=formatted_history)
 
+
 @app.route('/passenger/download_ticket/<int:booking_id>')
 @login_required
 @passenger_access
 def download_ticket(booking_id):
     db = get_db()
+    
     ticket = db.execute('''
         SELECT b.id, b.status, b.seat_number, b.total_cost, b.booking_time, s.route_name, s.departure_time, s.travel_date, u.name 
         FROM bookings b 
@@ -426,24 +432,28 @@ def download_ticket(booking_id):
         flash("Ticket not found or not confirmed.", "error")
         return redirect('/passenger/history')
 
+    # Register the Unicode Font from your exact folder structure
+    try:
+        pdfmetrics.registerFont(TTFont('DejaVuSans', 'static/font/DejavuSans-MdPB.ttf'))
+        main_font = 'DejaVuSans'
+    except Exception as e:
+        print(f"Warning: PDF font missing. {e}")
+        main_font = 'Helvetica-Bold' # Fallback
+
     buffer = io.BytesIO()
     
-    # --- CUSTOM PAGE SIZE (Perfectly wraps the ticket for Mobile/Digital viewing) ---
     page_width = 580
     page_height = 220
     p = canvas.Canvas(buffer, pagesize=(page_width, page_height))
     
-    # Dimensions & Positioning (Shifted origin down to remove white space)
     ticket_width = 540
     ticket_height = 200
     x_offset = 20
     y_offset = 10
     
-    # Outer Border
+    # Outer Border & Main Ticket Background
     p.setFillColor(colors.HexColor("#e2e8f0"))
     p.roundRect(x_offset + 2, y_offset - 2, ticket_width, ticket_height, 12, fill=1, stroke=0)
-    
-    # Main Ticket Background
     p.setFillColor(colors.white)
     p.setStrokeColor(colors.HexColor("#cbd5e1"))
     p.setLineWidth(1)
@@ -456,10 +466,9 @@ def download_ticket(booking_id):
     
     # Header Text
     p.setFillColor(colors.white)
-    p.setFont("Helvetica-Bold", 16)
+    p.setFont(main_font, 16)
     p.drawString(x_offset + 20, y_offset + ticket_height - 26, "BusBalance Municipal Transit")
-    
-    p.setFont("Helvetica-Bold", 12)
+    p.setFont(main_font, 12)
     p.setFillColor(colors.HexColor("#38bdf8"))
     p.drawRightString(x_offset + ticket_width - 20, y_offset + ticket_height - 25, "OFFICIAL E-TICKET")
     
@@ -469,70 +478,80 @@ def download_ticket(booking_id):
     p.line(x_offset + 390, y_offset, x_offset + 390, y_offset + ticket_height - 40)
     p.setDash(1, 0)
     
-    # --- LEFT SECTION: PROFESSIONAL TABLE/GRID ---
+    # Grid Setup
     grid_x = x_offset + 20
     grid_y = y_offset + 20
     grid_w = 350
     row_h = 35
     
-    # Draw Grid Lines
     p.setStrokeColor(colors.HexColor("#cbd5e1"))
-    p.rect(grid_x, grid_y, grid_w, row_h * 3) # Outer box
-    p.line(grid_x, grid_y + row_h, grid_x + grid_w, grid_y + row_h) # Horizontal 1
-    p.line(grid_x, grid_y + row_h * 2, grid_x + grid_w, grid_y + row_h * 2) # Horizontal 2
-    p.line(grid_x + 175, grid_y + row_h, grid_x + 175, grid_y + row_h * 3) # Vertical split for top 2 rows
-    p.line(grid_x + 116, grid_y, grid_x + 116, grid_y + row_h) # Vertical split 1 for bottom row
-    p.line(grid_x + 233, grid_y, grid_x + 233, grid_y + row_h) # Vertical split 2 for bottom row
+    p.rect(grid_x, grid_y, grid_w, row_h * 3)
+    p.line(grid_x, grid_y + row_h, grid_x + grid_w, grid_y + row_h)
+    p.line(grid_x, grid_y + row_h * 2, grid_x + grid_w, grid_y + row_h * 2)
+    p.line(grid_x + 175, grid_y + row_h, grid_x + 175, grid_y + row_h * 3)
+    p.line(grid_x + 116, grid_y, grid_x + 116, grid_y + row_h)
+    p.line(grid_x + 233, grid_y, grid_x + 233, grid_y + row_h)
     
-    # Populate Grid Headers (Light Gray Text)
+    # Grid Headers
     p.setFillColor(colors.HexColor("#64748b"))
-    p.setFont("Helvetica-Bold", 8)
+    p.setFont(main_font, 8)
     p.drawString(grid_x + 10, grid_y + (row_h * 3) - 15, "PASSENGER NAME")
     p.drawString(grid_x + 185, grid_y + (row_h * 3) - 15, "BOOKING REFERENCE")
-    
     p.drawString(grid_x + 10, grid_y + (row_h * 2) - 15, "ROUTE DESIGNATION")
     p.drawString(grid_x + 185, grid_y + (row_h * 2) - 15, "DEPARTURE DATE")
-    
     p.drawString(grid_x + 10, grid_y + row_h - 15, "DEPARTURE TIME")
     p.drawString(grid_x + 126, grid_y + row_h - 15, "TOTAL PAID")
     p.drawString(grid_x + 243, grid_y + row_h - 15, "ISSUED ON")
     
-    # Populate Grid Data (Dark Navy Text)
+    # Grid Data
     p.setFillColor(colors.HexColor("#0f172a"))
+    p.setFont(main_font, 12)
     
-    # Row 3 (Top) Data
-    p.setFont("Helvetica-Bold", 12)
+    # Row 3 (Top)
     p.drawString(grid_x + 10, grid_y + (row_h * 3) - 30, str(ticket['name']))
     p.drawString(grid_x + 185, grid_y + (row_h * 3) - 30, f"#{ticket['id']}")
     
-    # Row 2 (Middle) Data
-    route = str(ticket['route_name'])
-    if len(route) > 24: route = route[:21] + "..."
-    p.drawString(grid_x + 10, grid_y + (row_h * 2) - 30, route)
-    p.drawString(grid_x + 185, grid_y + (row_h * 2) - 30, str(ticket['travel_date']))
+    # Row 2 (Middle) - Text Wrap for Route
+    styles = getSampleStyleSheet()
+    route_style = styles['Normal']
+    route_style.fontName = main_font
+    route_style.fontSize = 9
+    route_style.textColor = colors.HexColor("#0f172a")
+    route_style.leading = 10
     
-    # Row 1 (Bottom) Data
-    p.setFont("Helvetica-Bold", 11)
+    route_paragraph = Paragraph(str(ticket['route_name']), route_style)
+    route_paragraph.wrapOn(p, 160, row_h)
+    route_paragraph.drawOn(p, grid_x + 10, grid_y + (row_h * 2) - 32)
+    
+    # Fake DD-MM-YYYY format
+    p.setFont(main_font, 12)
+    raw_date = str(ticket['travel_date'])
+    formatted_date = f"{raw_date[8:10]}-{raw_date[5:7]}-{raw_date[0:4]}" if len(raw_date) == 10 else raw_date
+    p.drawString(grid_x + 185, grid_y + (row_h * 2) - 30, formatted_date)
+    
+    # Row 1 (Bottom)
+    p.setFont(main_font, 11)
     p.drawString(grid_x + 10, grid_y + row_h - 30, str(ticket['departure_time']))
     p.drawString(grid_x + 126, grid_y + row_h - 30, f"₹{ticket['total_cost']:.2f}")
-    p.drawString(grid_x + 243, grid_y + row_h - 30, str(ticket['booking_time'][:10]))
     
-    # --- RIGHT SECTION: STUB & BARCODE ---
+    raw_issue = str(ticket['booking_time'][:10])
+    formatted_issue = f"{raw_issue[8:10]}-{raw_issue[5:7]}-{raw_issue[0:4]}" if len(raw_issue) == 10 else raw_issue
+    p.drawString(grid_x + 243, grid_y + row_h - 30, formatted_issue)
+    
+    # Right Section
     p.setFillColor(colors.HexColor("#64748b"))
-    p.setFont("Helvetica-Bold", 9)
+    p.setFont(main_font, 9)
     p.drawCentredString(x_offset + 465, y_offset + 130, "VALID FOR SEAT(S)")
-    
-    # Emphasized Seat Box
     p.setFillColor(colors.HexColor("#e2e8f0"))
     p.roundRect(x_offset + 410, y_offset + 95, 110, 25, 4, fill=1, stroke=0)
     p.setFillColor(colors.HexColor("#e11d48"))
     
     seats = ", ".join(map(str, json.loads(ticket['seat_number']))) if ticket['seat_number'] else 'WL'
-    if len(seats) > 12: p.setFont("Helvetica-Bold", 10)
-    else: p.setFont("Helvetica-Bold", 14)
+    if len(seats) > 12: p.setFont(main_font, 10)
+    else: p.setFont(main_font, 14)
     p.drawCentredString(x_offset + 465, y_offset + 103, seats)
     
-    # Procedural Mock Barcode
+    # Mock Barcode
     p.setFillColor(colors.black)
     import random
     random.seed(ticket['id'])
@@ -547,7 +566,6 @@ def download_ticket(booking_id):
     p.showPage()
     p.save()
     buffer.seek(0)
-    
     return send_file(buffer, as_attachment=True, download_name=f"BusBalance_Ticket_{booking_id}.pdf", mimetype='application/pdf')
 
 @app.route('/staff/dashboard')

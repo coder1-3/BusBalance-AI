@@ -15,8 +15,7 @@
         <div style="display: flex; gap: 1.5rem;">
             <div class="form-group" style="flex: 2;">
                 <label>Date of Travel (7-Day Window)</label>
-                <input type="text" name="travel_date" class="date-picker" placeholder="Select Date..." value="{{ min_date }}" data-min-date="{{ min_date }}" data-max-date="{{ max_date }}" required>
-            </div>
+                <input type="text" name="travel_date" class="date-picker" placeholder="Select Date..." data-min-date="{{ min_date }}" data-max-date="{{ max_date }}" required>            </div>
             <div class="form-group" style="flex: 1;">
                 <label>Passengers</label>
                 <input name="passenger_count" type="text" required>
@@ -57,11 +56,18 @@ document.addEventListener('click', function (e) {
         document.getElementById('autocomplete-list').innerHTML = '';
     }
 });
-
-flatpickr(".date-picker", {
-    dateFormat: "Y-m-d",
-    minDate: "{{ min_date }}",
-    maxDate: "{{ max_date }}"
-});
+</script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr">
+    if(document.querySelector('.date-picker')) {
+        const dateInput = document.querySelector('.date-picker');
+        flatpickr(dateInput, {
+            dateFormat: "Y-m-d", 
+            altInput: true,
+            altFormat: "d-m-Y",
+            defaultDate: dateInput.getAttribute('data-min-date'),
+            minDate: dateInput.getAttribute('data-min-date'),
+            maxDate: dateInput.getAttribute('data-max-date')
+        });
+    }
 </script>
 {% endblock %}
