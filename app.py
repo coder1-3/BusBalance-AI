@@ -5,6 +5,7 @@ import os
 import threading
 import io
 import json
+import random
 from reportlab.pdfbase import pdfmetrics
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.platypus import Paragraph
@@ -140,6 +141,13 @@ def run_daily_ai_pipeline():
     except Exception as e:
         print(f"[AI Pipeline] Critical Error during generation: {e}")
 
+def generate_math_captcha():
+    num1 = random.randint(1, 10)
+    num2 = random.randint(1, 10)
+    # Store the correct answer in the secure server-side session
+    session['captcha_answer'] = str(num1 + num2)
+    return f"{num1} + {num2} = ?"
+
 # Boot up the background scheduler
 scheduler = BackgroundScheduler()
 
@@ -206,7 +214,8 @@ def login():
             session['role'] = user['role']
             return redirect('/passenger/search')
         flash('Invalid credentials. Try again.', 'error')
-    return render_template('login.html')
+    captcha_question = generate_math_captcha()
+    return render_template('login.html', captcha_question=captcha_question)
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
@@ -224,7 +233,8 @@ def register():
             return redirect('/login')
         except sqlite3.IntegrityError:
             flash('Username taken.', 'error')
-    return render_template('register.html')
+    captcha_question = generate_math_captcha()
+    return render_template('register.html', captcha_question=captcha_question)
 
 @app.route('/logout')
 def logout():
