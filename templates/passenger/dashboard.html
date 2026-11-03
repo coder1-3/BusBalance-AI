@@ -1,4 +1,3 @@
-
 {% extends "layout.html" %}
 {% block content %}
 <div style="margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: flex-end;">
@@ -14,7 +13,17 @@
     <div class="ticket-strip">
         <div style="flex: 2;">
             <div style="font-size: 1.75rem; font-weight: 800; color: var(--brand-navy);">{{ s.departure_time }}</div>
-            <div style="font-size: 1.15rem; color: var(--text-muted); margin-top: 0.25rem;">{{ s.route_name }}</div>
+            <div style="font-size: 1.15rem; color: var(--text-muted); margin-top: 0.25rem; display: flex; align-items: center; gap: 8px;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--brand-blue); flex-shrink: 0;">
+                    <rect x="4" y="3" width="16" height="18" rx="2" ry="2"></rect>
+                    <path d="M8 21v-2"></path>
+                    <path d="M16 21v-2"></path>
+                    <path d="M4 11h16"></path>
+                    <circle cx="8" cy="15" r="1"></circle>
+                    <circle cx="16" cy="15" r="1"></circle>
+                </svg>
+                <span>{{ s.route_name }}</span>
+            </div>
         </div>
         
         <div style="flex: 2; padding: 0 2rem;">

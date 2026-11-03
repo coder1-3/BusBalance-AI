@@ -2,7 +2,7 @@
 {% block content %}
 <div class="card" style="max-width: 400px; margin: 4rem auto; border: none; box-shadow: 0 10px 25px rgba(0,0,0,0.05);">
     <h2 style="margin-bottom: 1.5rem; text-align: center; color: var(--brand-navy);">Sign In</h2>
-    <form method="POST" action="/login">
+    <form method="POST" action="/login" id="loginForm">
         <div class="form-group">
             <label>Username</label>
             <input type="text" name="username" required>
@@ -14,11 +14,32 @@
         
         <!-- Math CAPTCHA Field -->
         <div class="form-group">
-            <label>Security Check:<br><br> What is {{ captcha_question }}</label>
-            <input type="number" name="captcha" required autocomplete="off" placeholder="Enter the sum">
+            <label id="captcha-label">Security Check: What is {{ captcha_question }}</label>
+            <!-- oninput clears the red error state the moment the user starts typing again -->
+            <input type="number" id="captcha-input" name="captcha" required autocomplete="off" placeholder="Enter the sum" oninput="this.style.borderColor='var(--border-soft)'; document.getElementById('captcha-error').style.display='none';">
+            <div id="captcha-error" style="color: var(--brand-red); font-size: 0.85rem; font-weight: 600; margin-top: 0.5rem; display: none;">Incorrect answer. Please check your math.</div>
         </div>
 
         <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;">Sign In</button>
     </form>
 </div>
+
+<script>
+    // Intercept form submission to check math locally
+    document.getElementById('loginForm').addEventListener('submit', function(e) {
+        const labelText = document.getElementById('captcha-label').innerText;
+        const nums = labelText.match(/\d+/g); // Extracts the two numbers from the question text
+        
+        if (nums && nums.length >= 2) {
+            const expectedSum = parseInt(nums[0]) + parseInt(nums[1]);
+            const userInput = parseInt(document.getElementById('captcha-input').value);
+            
+            if (userInput !== expectedSum) {
+                e.preventDefault(); // Stop form submission
+                document.getElementById('captcha-input').style.borderColor = 'var(--brand-red)';
+                document.getElementById('captcha-error').style.display = 'block';
+            }
+        }
+    });
+</script>
 {% endblock %}
